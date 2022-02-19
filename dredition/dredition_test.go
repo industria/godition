@@ -41,3 +41,52 @@ func TestReadNotification(t *testing.T) {
 		t.Errorf("product name not %s", expected)
 	}
 }
+
+func TestBurnMetadata(t *testing.T) {
+	f, err := os.Open("../testdata/burn-metadata.json")
+	if err != nil {
+		t.Error("failed to read testdata")
+	}
+	defer f.Close()
+
+	m, err := ReadBurnMetadata(f)
+	if err != nil {
+		t.Error("failed to read metadata")
+	}
+	expected := "eb"
+	if m.ClientID != expected {
+		t.Errorf("ClientID was %s got %s", m.ClientID, expected)
+	}
+	expected = "5d5a8cf857cd2009c74b6378"
+	if m.EditionID != expected {
+		t.Errorf("EditionID was %s got %s", m.EditionID, expected)
+	}
+	expected = "0387774c47c04e80"
+	if m.HTMLHash != expected {
+		t.Errorf("HTMLHash was %s got %s", m.HTMLHash, expected)
+	}
+	expected = "2022-02-19T18:51:53.915Z"
+	if m.HTMLUpdatedAt != expected {
+		t.Errorf("HTMLUpdatedAt was %s got %s", m.HTMLUpdatedAt, expected)
+	}
+	expected = "https://smooth-storage.aptoma.no/users/drf-eb/files/sphynx/2022/2/19/0387774c47c04e80.html"
+	if m.HTMLUrl != expected {
+		t.Errorf("HTMLUrl was %s got %s", m.HTMLUrl, expected)
+	}
+	expected = "236a375ec45e1904"
+	if m.CSSHash != expected {
+		t.Errorf("CSSHash was %s got %s", m.CSSHash, expected)
+	}
+	expected = "2022-02-14T09:03:41.489Z"
+	if m.CSSUpdatedAt != expected {
+		t.Errorf("CSSUpdatedAt was %s got %s", m.CSSUpdatedAt, expected)
+	}
+	expected = "https://smooth-storage.aptoma.no/users/drf-eb/files/sphynx/2022/2/14/236a375ec45e1904.css"
+	if m.CSSUrl != expected {
+		t.Errorf("CSSUrl was %s got %s", m.CSSUrl, expected)
+	}
+	expected = "https://smooth-storage.aptoma.no/users/drf-eb/files/sphynx/2022/2/19/0387774c47c04e80-preview.html"
+	if m.PreviewUrl != expected {
+		t.Errorf("PreviewUrl was %s got %s", m.PreviewUrl, expected)
+	}
+}
