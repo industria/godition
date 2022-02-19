@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := build
 
-.PHONY: clean build test vet
+.PHONY: clean build test vet run-decks
 
 vet:
 	go vet ./...
@@ -13,3 +13,6 @@ build: vet
 
 clean:
 	go clean
+
+run-decks:
+	go run ./cmd/decks/
