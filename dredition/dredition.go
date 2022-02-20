@@ -3,6 +3,8 @@ package dredition // github.com/industria/godition/dredition"
 import (
 	"encoding/json"
 	"io"
+	"net/http"
+	"time"
 )
 
 type Product struct {
@@ -17,8 +19,9 @@ type Edition struct {
 }
 
 type Data struct {
-	Product Product `json:"product"`
-	Edition Edition `json:"edition"`
+	Product Product      `json:"product"`
+	Edition Edition      `json:"edition"`
+	Burned  BurnMetadata `json:"burned"`
 }
 
 type Notification struct {
@@ -54,6 +57,50 @@ func ReadBurnMetadata(r io.Reader) (*BurnMetadata, error) {
 		return nil, err
 	}
 	return &meta, nil
+}
+
+type BurnProcessor struct {
+	httpClient *http.Client
+}
+
+func NewBurnProcessor() *BurnProcessor {
+	return &BurnProcessor{
+		httpClient: &http.Client{Timeout: time.Second * 10},
+	}
+
+}
+
+func (bp *BurnProcessor) Process(n Notification) error {
+
+	/*
+		m, err := bp.metadata(n)
+		if err != nil {
+			return err
+		}
+		log.Printf("Metadata : %v", m)
+	*/
+	return nil
+}
+
+// There should be no need for this as the data is fully delivered in the post burn event
+func (bp *BurnProcessor) metadata(n Notification) (*BurnMetadata, error) {
+	url := "https://sphynx.aptoma.no/burned/" + n.Data.Edition.Id
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := bp.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var metadata BurnMetadata
+	err = json.NewDecoder(resp.Body).Decode(&metadata)
+	if err != nil {
+		return nil, err
+	}
+	return &metadata, nil
 }
 
 // Get Metadata using

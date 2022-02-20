@@ -6,7 +6,7 @@ import (
 )
 
 func TestReadNotification(t *testing.T) {
-	f, err := os.Open("../testdata/notification.json")
+	f, err := os.Open("../testdata/notification-full.json")
 	if err != nil {
 		t.Error("failed to open file")
 	}
@@ -16,15 +16,15 @@ func TestReadNotification(t *testing.T) {
 		t.Errorf("failed to parse notification: %v", err)
 	}
 
-	if n.Event != "publish" {
-		t.Error("event not publish")
+	if n.Event != "SphynxPostPublishEvent" {
+		t.Error("event not SphynxPostPublishEvent")
 	}
 
-	var expected = "5d271809c4579c35f2ff903d"
+	var expected = "5d5a8cc11574df09cd20ecac"
 	if n.Data.Product.Id != expected {
 		t.Errorf("product id not %s", expected)
 	}
-	expected = "dev-front"
+	expected = "ekstrabladet-dk"
 	if n.Data.Product.Name != expected {
 		t.Errorf("product name not %s", expected)
 	}
@@ -32,14 +32,53 @@ func TestReadNotification(t *testing.T) {
 	if n.Data.Product.Type != expected {
 		t.Errorf("product type not %s", expected)
 	}
-	expected = "5d27181e3b33e81f2529d85e"
+	expected = "5d5a8cf857cd2009c74b6378"
 	if n.Data.Edition.Id != expected {
-		t.Errorf("product type not %s", expected)
+		t.Errorf("edition id not %s", expected)
 	}
-	expected = "sandbox"
+	expected = "manuel-top"
 	if n.Data.Edition.Name != expected {
-		t.Errorf("product name not %s", expected)
+		t.Errorf("edition name not %s", expected)
 	}
+
+	m := n.Data.Burned
+	expected = "eb"
+	if m.ClientID != expected {
+		t.Errorf("ClientID was %s got %s", m.ClientID, expected)
+	}
+	expected = "5d5a8cf857cd2009c74b6378"
+	if m.EditionID != expected {
+		t.Errorf("EditionID was %s got %s", m.EditionID, expected)
+	}
+	expected = "fab7859c399e7721"
+	if m.HTMLHash != expected {
+		t.Errorf("HTMLHash was %s got %s", m.HTMLHash, expected)
+	}
+	expected = "2022-02-20T06:10:07.076Z"
+	if m.HTMLUpdatedAt != expected {
+		t.Errorf("HTMLUpdatedAt was %s got %s", m.HTMLUpdatedAt, expected)
+	}
+	expected = "https://smooth-storage.aptoma.no/users/drf-eb/files/sphynx/2022/2/20/fab7859c399e7721.html"
+	if m.HTMLUrl != expected {
+		t.Errorf("HTMLUrl was %s got %s", m.HTMLUrl, expected)
+	}
+	expected = "236a375ec45e1904"
+	if m.CSSHash != expected {
+		t.Errorf("CSSHash was %s got %s", m.CSSHash, expected)
+	}
+	expected = "2022-02-14T09:03:41.489Z"
+	if m.CSSUpdatedAt != expected {
+		t.Errorf("CSSUpdatedAt was %s got %s", m.CSSUpdatedAt, expected)
+	}
+	expected = "https://smooth-storage.aptoma.no/users/drf-eb/files/sphynx/2022/2/14/236a375ec45e1904.css"
+	if m.CSSUrl != expected {
+		t.Errorf("CSSUrl was %s got %s", m.CSSUrl, expected)
+	}
+	expected = "https://smooth-storage.aptoma.no/users/drf-eb/files/sphynx/2022/2/20/fab7859c399e7721-preview.html"
+	if m.PreviewUrl != expected {
+		t.Errorf("PreviewUrl was %s got %s", m.PreviewUrl, expected)
+	}
+
 }
 
 func TestBurnMetadata(t *testing.T) {
