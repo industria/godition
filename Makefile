@@ -9,10 +9,11 @@ test:
 	go test -v ./...
 
 build: vet
-	go build -o reconsile
+	go build -o decks -v ./cmd/decks 
 
 clean:
 	go clean
+	rm -f decks
 
 run-decks:
 	go run ./cmd/decks/

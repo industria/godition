@@ -3,6 +3,7 @@ package dredition // github.com/industria/godition/dredition"
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -19,9 +20,8 @@ type Edition struct {
 }
 
 type Data struct {
-	Product Product      `json:"product"`
-	Edition Edition      `json:"edition"`
-	Burned  BurnMetadata `json:"burned"`
+	Product Product `json:"product"`
+	Edition Edition `json:"edition"`
 }
 
 type Notification struct {
@@ -71,18 +71,14 @@ func NewBurnProcessor() *BurnProcessor {
 }
 
 func (bp *BurnProcessor) Process(n Notification) error {
-
-	/*
-		m, err := bp.metadata(n)
-		if err != nil {
-			return err
-		}
-		log.Printf("Metadata : %v", m)
-	*/
+	m, err := bp.metadata(n)
+	if err != nil {
+		return err
+	}
+	log.Printf("Metadata : %v", m)
 	return nil
 }
 
-// There should be no need for this as the data is fully delivered in the post burn event
 func (bp *BurnProcessor) metadata(n Notification) (*BurnMetadata, error) {
 	url := "https://sphynx.aptoma.no/burned/" + n.Data.Edition.Id
 	req, err := http.NewRequest("GET", url, nil)
