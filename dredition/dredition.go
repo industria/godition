@@ -91,13 +91,7 @@ func (bp *BurnProcessor) metadata(n Notification) (*BurnMetadata, error) {
 	}
 	defer resp.Body.Close()
 
-	metadata, err := ReadBurnMetadata(resp.Body)
-	//var metadata BurnMetadata
-	//err = json.NewDecoder(resp.Body).Decode(&metadata)
-	//if err != nil {
-	//	return nil, err
-	//}
-	return metadata, err
+	return ReadBurnMetadata(resp.Body)
 }
 
 // Get Metadata using
