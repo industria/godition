@@ -2,9 +2,11 @@ package dredition // github.com/industria/godition/dredition"
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -75,8 +77,34 @@ func (bp *BurnProcessor) Process(n Notification) error {
 	if err != nil {
 		return err
 	}
+
 	log.Printf("Metadata : %v", m)
+
+	css, err := bp.fetchCSS(m.CSSUrl)
+	if err != nil {
+		return err
+	}
+	log.Printf("CSS %s", *css)
+
 	return nil
+}
+
+func (bp *BurnProcessor) fetchCSS(url string) (*string, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request from %s : %v", url, err)
+	}
+	res, err := bp.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed request of %s : %v", url, err)
+	}
+	builder := &strings.Builder{}
+	_, err = io.Copy(builder, res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from %s : %v", url, err)
+	}
+	s := builder.String()
+	return &s, nil
 }
 
 func (bp *BurnProcessor) metadata(n Notification) (*BurnMetadata, error) {
