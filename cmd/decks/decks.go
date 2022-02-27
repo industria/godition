@@ -55,16 +55,13 @@ func burn(c *gin.Context) {
 		return
 	}
 
-	log.Printf("CSS: %s", *css)
-
-	// TODO: CSS source mapping if it is actually published...
+	log.Printf("CSS: %d", len(*css))
 
 	html, err := drEditionClient.HTML(metadata)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	log.Printf("HTML: %s", *html)
 
 	htmlR := strings.NewReader(*html)
 	decks, err := splitter.Split(htmlR, notification)
@@ -73,9 +70,7 @@ func burn(c *gin.Context) {
 		return
 	}
 
-	for _, deck := range *decks {
-		log.Printf("Deck: %v", deck)
-	}
+	log.Printf("Decks: %d", len(*decks))
 
 	c.Status(200)
 }
