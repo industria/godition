@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -61,43 +60,36 @@ func ReadBurnMetadata(r io.Reader) (*BurnMetadata, error) {
 	return &meta, nil
 }
 
-type BurnProcessor struct {
+// DrEdition client for accessing services
+type Client struct {
 	httpClient *http.Client
 }
 
-func NewBurnProcessor() *BurnProcessor {
-	return &BurnProcessor{
+func NewClient() *Client {
+	return &Client{
 		httpClient: &http.Client{Timeout: time.Second * 10},
 	}
-
 }
 
-func (bp *BurnProcessor) Process(n Notification) error {
-	m, err := bp.metadata(n)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Metadata : %v", m)
-
-	css, err := bp.fetchCSS(m.CSSUrl)
-	if err != nil {
-		return err
-	}
-	log.Printf("CSS %s", *css)
-
-	return nil
+func (c *Client) CSS(m *BurnMetadata) (*string, error) {
+	return c.Resource(m.CSSUrl)
 }
 
-func (bp *BurnProcessor) fetchCSS(url string) (*string, error) {
+func (c *Client) HTML(m *BurnMetadata) (*string, error) {
+	return c.Resource(m.HTMLUrl)
+}
+
+func (c *Client) Resource(url string) (*string, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request from %s : %v", url, err)
 	}
-	res, err := bp.httpClient.Do(req)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed request of %s : %v", url, err)
 	}
+	defer res.Body.Close()
+
 	builder := &strings.Builder{}
 	_, err = io.Copy(builder, res.Body)
 	if err != nil {
@@ -107,13 +99,13 @@ func (bp *BurnProcessor) fetchCSS(url string) (*string, error) {
 	return &s, nil
 }
 
-func (bp *BurnProcessor) metadata(n Notification) (*BurnMetadata, error) {
+func (c *Client) Metadata(n Notification) (*BurnMetadata, error) {
 	url := "https://sphynx.aptoma.no/burned/" + n.Data.Edition.Id
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := bp.httpClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

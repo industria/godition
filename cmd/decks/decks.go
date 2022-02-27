@@ -3,17 +3,19 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/industria/godition/dredition"
+	"github.com/industria/godition/splitter"
 )
 
-var burnProcessor *dredition.BurnProcessor
+var drEditionClient *dredition.Client
 
 func main() {
 	log.Print("Fisk")
 
-	burnProcessor = dredition.NewBurnProcessor()
+	drEditionClient = dredition.NewClient()
 
 	r := gin.New()
 	r.Use(gin.Logger())
@@ -37,13 +39,42 @@ func burn(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	log.Printf("%v", notification)
+	log.Printf("Notification: %v", notification)
 
-	err = burnProcessor.Process(notification)
+	metadata, err := drEditionClient.Metadata(notification)
 	if err != nil {
-		log.Printf("unable to process burn notification %v : %v", notification, err)
 		c.Status(http.StatusInternalServerError)
 		return
+	}
+
+	log.Printf("Burn Metadata: %v", metadata)
+
+	css, err := drEditionClient.CSS(metadata)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("CSS: %s", *css)
+
+	// TODO: CSS source mapping if it is actually published...
+
+	html, err := drEditionClient.HTML(metadata)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	log.Printf("HTML: %s", *html)
+
+	htmlR := strings.NewReader(*html)
+	decks, err := splitter.Split(htmlR, notification)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	for _, deck := range *decks {
+		log.Printf("Deck: %v", deck)
 	}
 
 	c.Status(200)
